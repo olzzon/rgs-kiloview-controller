@@ -1,11 +1,12 @@
 import kiloviewNDI from "kiloview-ndi"
 import portscanner from "portscanner"
 import fs from 'fs'
+import { extractArg } from "./utils/extractArgs"
 
 const IP_ADDRESS = extractArg('ip') || '192.168.1.201'
 const USER = extractArg('user') || 'admin'
 const PASSWORD = extractArg('password') || 'admin'
-const RGS_LIST = extractArg('rgslist') || './sourcelist.json'
+const RGS_LIST = extractArg('rgshostlist') || './sourcelist.json'
 
 interface NDIsource {
     name: string,
@@ -79,12 +80,4 @@ async function setNDISource(converter: kiloviewNDI) {
     if (!currentNdiSource) return
     console.log('Setting NDI source');
     await converter.decoderCurrentSetUrl(currentNdiSource.name, currentNdiSource.url);
-}
-
-function extractArg(argName: string): string | undefined {
-    let extracted = process.argv.find((arg) => {
-        return arg.includes(argName)
-    })
-    if (!extracted) return undefined
-    return extracted.split('=')[1]
 }
