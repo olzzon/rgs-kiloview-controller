@@ -34,11 +34,11 @@ async function setupConnection(converter: kiloviewNDI) {
     await converter.modeSwitch('decoder');
 
     console.log('setting up source selection timer');
-    setInterval(() => {
-        let newSource: NDIsource | undefined = getRgsNdiSource(rgsPorts, rgsSourceList);
-        if (newSource && newSource.url !== currentNdiSource.url) {
+    setInterval(async() => {
+        let newSource: NDIsource | undefined = await getRgsNdiSource(rgsPorts, rgsSourceList);
+        if (newSource && newSource.url !== currentNdiSource?.url) {
             console.log('NDI source changed to ' + currentNdiSource.name + ' at ' + currentNdiSource.url);
-            currentNdiSource = { ...newSource }
+            currentNdiSource = newSource
             setNDISource(currentNdiSource, converter);
         }
     },
