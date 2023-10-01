@@ -1,5 +1,8 @@
 
 import kiloviewNDI from "kiloview-ndi"
+import portscanner from "portscanner"
+import fs from 'fs'
+import { log } from "console"
 
 const IP_ADDRESS = '192.168.1.201'
 const USERNAME = 'admin'
@@ -10,12 +13,19 @@ interface NDIsource {
     url: string
 }
 
-let ndiSource: NDIsource = {
-    name: 'test',
-    url: '192.168.1.202:5900'
+let ndiSource: NDIsource
+
+interface RGSsource {
+    port: number,
+    NDIsource: NDIsource
 }
 
-// Toggle between encoder/decoder
+const rgsSourceList: RGSsource[] = JSON.parse(fs.readFileSync('./sourcelist.json', 'utf8'))
+console.log(rgsSourceList)
+const rgsPorts: number[] = rgsSourceList.map((source) => {
+    return source.port
+})
+
 async function setupConnection(converter: kiloviewNDI) {
     console.log('Switching Kiloview to decoder mode');
     await converter.modeSwitch('decoder');
@@ -25,7 +35,7 @@ async function setupConnection(converter: kiloviewNDI) {
 async function setupSourceTimer(converter: kiloviewNDI) {
     console.log('setting up source seleciton timer');
     setInterval(() => {
-        let newSource: NDIsource = checkCurrentSource();
+        let newSource: NDIsource = checkRgsSource();
         if (newSource.url !== ndiSource.url) {
             ndiSource = { ...newSource }
             setNDISource(converter);
@@ -36,7 +46,15 @@ async function setupSourceTimer(converter: kiloviewNDI) {
     );
 }
 
-function checkCurrentSource(): NDIsource {
+function checkRgsSource(): NDIsource {
+    let newSource: RGSsource;
+    portscanner.findAPortInUse(rgsPorts,
+    (err: Error, port: number) => {
+        console.log('Port ' + port + ' is in use');
+        newSource = rgsSourceList.find((source: RGSsource) => {
+            return source.port === port
+        })
+    })
     console.log('Checking current RGS source');
     let currentSource = { ...ndiSource };
     return currentSource;
@@ -47,6 +65,9 @@ async function setNDISource(converter: kiloviewNDI) {
     await converter.decoderCurrentSetUrl(ndiSource.name, ndiSource.url);
 }
 
+
+console.log('Checking RGS connection :')
+console.log(checkRgsSource())
 console.log('Connecting to Kiloview on ip: ');
 console.log(IP_ADDRESS);
 const converter = new kiloviewNDI(IP_ADDRESS, USERNAME, PASSWORD);
