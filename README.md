@@ -1,6 +1,9 @@
 # rgs-kiloview-controller
 Controller for Kiloview NDI video source to follow RGS client selection
 
+The controller checks what port the RGS client is connected to and sets the NDI video source in kiloview to the same port
+The Port-NDI source mapping is defined in a .json file.
+
 ## Installation:
 copy rgs-kiloview.exe from the packagefolder/release to the RGS client
 auto start the rgs-kiloview.exe on the RGS client
