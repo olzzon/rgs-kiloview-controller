@@ -1,15 +1,16 @@
 import kiloviewNDI from "kiloview-ndi"
 
 import { NDIsource, RGSsource } from "./types/interfaces"
-import { extractArg } from "./utils/extractArgs"
+import { extractRuntimeArg } from "./utils/extractRuntimeArgs"
 import { getRgsNdiSource } from "./utils/getRgsNdiSource"
-import { setNDISource } from "./utils/setNDISource"
 import { readRGSList } from "./utils/readRGSList"
+import { setNDISource } from "./utils/setNDISource"
+import { clearNDISource } from "./utils/clearNdiSource"
 
-const IP_ADDRESS = extractArg('ip') || '192.168.1.201'
-const USER = extractArg('user') || 'admin'
-const PASSWORD = extractArg('password') || 'admin'
-const RGS_LIST_FILENAME = extractArg('rgshostlist') || './sourcelist.json'
+const IP_ADDRESS = extractRuntimeArg('ip') || '192.168.1.168'
+const USER = extractRuntimeArg('user') || 'admin'
+const PASSWORD = extractRuntimeArg('password') || 'Admin12345678'
+const RGS_LIST_FILENAME = extractRuntimeArg('rgshostlist') || './sourcelist.json'
 
 let currentNdiSource: NDIsource
 const rgsSourceList: RGSsource[] = readRGSList(RGS_LIST_FILENAME)
@@ -20,28 +21,29 @@ const rgsPorts: number[] = rgsSourceList.map((source) => {
 console.log('Connecting to Kiloview on ip: ', IP_ADDRESS);
 const converter = new kiloviewNDI(IP_ADDRESS, USER, PASSWORD);
 
-// Use decoderstatus to check if the device is connected:
-converter.decoderCurrentStatus()
-    .then(() => {
-        setupConnection(converter);
+console.log('Switching Kiloview to decoder mode');
+converter.modeSwitch('decoder')
+    .then(async () => {
+        console.log('setting up source selection timer');
+        setInterval(async () => {
+            try {
+                let newSource: NDIsource | undefined = await getRgsNdiSource(rgsPorts, rgsSourceList);
+
+                if (newSource && newSource.url !== currentNdiSource?.url) {
+                    currentNdiSource = newSource
+                    setNDISource(currentNdiSource, converter);
+                }
+            }
+            catch (err) {
+                if (currentNdiSource) {
+                    currentNdiSource = undefined
+                    clearNDISource(converter)
+                }
+            }
+        },
+            3000
+        );
     })
-    .catch((error) => {
+    .catch(() => {
         console.log('Error connecting to Kiloview');
     })
-
-async function setupConnection(converter: kiloviewNDI) {
-    console.log('Switching Kiloview to decoder mode');
-    await converter.modeSwitch('decoder');
-
-    console.log('setting up source selection timer');
-    setInterval(async() => {
-        let newSource: NDIsource | undefined = await getRgsNdiSource(rgsPorts, rgsSourceList);
-        if (newSource && newSource.url !== currentNdiSource?.url) {
-            console.log('NDI source changed to ' + currentNdiSource.name + ' at ' + currentNdiSource.url);
-            currentNdiSource = newSource
-            setNDISource(currentNdiSource, converter);
-        }
-    },
-        3000
-    );
-}
