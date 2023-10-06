@@ -12,7 +12,7 @@ const USER = extractRuntimeArg('user') || 'admin'
 const PASSWORD = extractRuntimeArg('password') || 'Admin12345678'
 const RGS_LIST_FILENAME = extractRuntimeArg('rgshostlist') || './sourcelist.json'
 
-let currentNdiSource: NDIsource
+let currentNdiSource: NDIsource = {name: '', url: ''}
 const rgsSourceList: RGSsource[] = readRGSList(RGS_LIST_FILENAME)
 const rgsPorts: number[] = rgsSourceList.map((source) => {
     return source.port
