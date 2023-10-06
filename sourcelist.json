@@ -9,7 +9,7 @@
     {
         "port": 5500,
         "NDIsource": {
-            "name": "test2",
+            "name": "CASPARCG (Test Pattern)",
             "url": "192.168.1.67:5900"
         }
     }

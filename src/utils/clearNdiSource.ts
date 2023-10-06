@@ -3,5 +3,5 @@ import { NDIsource } from "../types/interfaces";
 
 export async function clearNDISource(converter: kiloviewNDI) {
     console.log(' Setting Kiloview to Black output');
-    await converter.decoderPresetSetBlank('black')
+    await converter.decoderCurrentSetPreset(0)
 }
