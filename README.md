@@ -13,10 +13,10 @@ The controller will listen to the RGS client and set the NDI video source in kil
 
 ## Command line arguments:
 ```
-rgs-kiloview.exe -ip="kiloview ip address" -user="kiloview user" -password="kiloview password" -rgshostlist="rgs/ndi port/ndi list"
+rgs-kiloview.exe -ip="kiloview ip address" -user="kiloview user" -password="kiloview password" -rgshostlist="./path/to/config.json"
 ```
 
-## Config .json file:
+## config.json file:
 ```
 [
     {
